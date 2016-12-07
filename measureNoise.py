@@ -56,7 +56,7 @@ def calcMeanAndRms( data ):
 noiseMeasurements = []
 for ch in range(0,128,1):
 	chan = int(ch)
-        femb_config.selectChannel( chan/16, chan % 16)
+        femb_config.selectChannel( chan/16, chan % 16, 1)
         time.sleep(0.05)
         data = femb_config.femb.get_data()
 	meanAndRms = calcMeanAndRms(data)

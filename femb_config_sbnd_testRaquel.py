@@ -59,17 +59,16 @@ class FEMB_CONFIG:
 
         #set default value to FEMB ADCs and FEs
         self.configAdcAsic(self.adc_reg.REGS)
-        self.configDefFeAsic(self.fe_reg.REGS)
+        self.configFeAsic(self.fe_reg.REGS)
 
         #Set number events per header -- no use
         #self.femb.write_reg_i2c ( 8, 0x0)
         print "FEMB_CONFIG--> Reset FEMB is DONE"
 
-    def enablePulseMode(self,srcflag,chipnum,numchn):
+    def enablePulseMode(self,srcflag):
         #Configures board in test pulse mode
         #srcflag = 0 means external input is enabled
         #srcflag = 1 means internal FPGA DAC is enabled with default settings
-        #srcflag = 2 means internal FPGA DAC is enabled for single channel
         #srcflag = 99 means turn it off
         #ETW just playing around with the internal DAC settings not sure this works
         if (srcflag=="1"):
@@ -81,13 +80,16 @@ class FEMB_CONFIG:
             self.fe_reg.set_fe_sbnd_board(sts=1)
             for i in range(len(fe_reg)):
                 self.fe_reg.REGS[i] = fe_reg[i] | self.fe_reg.REGS[i]
+                print hex(self.fe_reg.REGS[i])
 
-            self.configDefFeAsic(self.fe_reg.REGS)
+            self.configFeAsic(self.fe_reg.REGS)
 
             # internal FPGA DAC settings
             freq = 20 # number of samples between pulses
+            #freq = 500 # number of samples between pulses
             dly = 80 # dly*5ns sets inteval between where FPGA starts pulse and ADC samples 
-            ampl =  5 % 32 # mV injected
+            ampl =  20 % 32 # mV injected
+            #ampl =  0 % 32 # mV injected
             int_dac = 0 # or 0xA1
             dac_meas = int_dac  # or 60
             reg_5_value = ((freq<<16)&0xFFFF0000) + ((dly<<8)&0xFF00) + ( (dac_meas|ampl)& 0xFF )
@@ -97,43 +99,48 @@ class FEMB_CONFIG:
             self.femb.write_reg_i2c(16, 0x0101)
             print self.femb.read_reg_i2c(16)
 
-        #### work in progress, should work but still testing (Raquel)
+        #### work in progress, may not work (Raquel)
 
         elif (srcflag=="2"):
             print "Enabling internal FPGA DAC by channel"
 
             # turn on test capacitor on all FE ASIC channels
             fe_reg = copy.deepcopy(self.fe_reg.REGS)
- 
-            self.fe_reg.set_fechn_reg( chip=int(chipnum), chn=int(numchn), sts=1) ### testing channel one channel in one asic
-            print "Pulse mode for chip and channel"  
- 
+
+
+            self.fe_reg.set_fechn_reg(chip= 0, chn= 0) ### testing channel 0 only
             for i in range(len(fe_reg)):
-                self.fe_reg.REGS[i] = fe_reg[i]  | self.fe_reg.REGS[i]
+                self.fe_reg.REGS[i] = fe_reg[i] | self.fe_reg.REGS[i]
                 print hex(self.fe_reg.REGS[i])
 
-            self.configDefFeAsic(self.fe_reg.REGS)
+
+            self.configFeAsic(self.fe_reg.REGS)
 
             # internal FPGA DAC settings
-            freq = 20 # number of samples between pulses
+            #freq = 20 # number of samples between pulses
+            freq = 100 # number of samples between pulses
             dly = 80 # dly*5ns sets inteval between where FPGA starts pulse and ADC samples 
-            ampl =  5 % 32 # mV injected
+            ampl =  20 % 32 # mV injected
+            #ampl =  2 % 32 # mV injected
             int_dac = 0 # or 0xA1
             dac_meas = int_dac  # or 60
             reg_5_value = ((freq<<16)&0xFFFF0000) + ((dly<<8)&0xFF00) + ( (dac_meas|ampl)& 0xFF )
-            self.femb.write_reg_i2c ( 5, reg_5_value)
+            reg_7_value = ((freq<<16)&0xFFFF0000) + ((dly<<8)&0xFF00) + ( (dac_meas|ampl)& 0xFF 
 
-            asicVal = int(0)
-            chVal = int(0)
-            regVal = (chVal << 8 ) + asicVal
-            
+ 
+            #self.femb.write_reg_i2c ( self.REG_SEL_CH, regVal)
+            #print "Enabling external pulse (7)"
+            #print hex(REG_SEL_CH)
+
+            #self.femb.write_reg_i2c ( 5, reg_5_value)
+            self.femb.write_reg_i2c ( 7, reg_7_value)
+
             # set to pulser mode (0x01) and enable FPGA DAC (0x01xx)
-            self.femb.write_reg_i2c(16, 0x0101) ### may need to be modified? (but no info from register 16)
+            self.femb.write_reg_i2c(16, 0x0101) ### may need to be modified! (but no info from register 16)
             print self.femb.read_reg_i2c(16)
+            #print self.femb.read_reg_i2c(REG_SEL_CH)
 
-            #self.femb.write_reg_i2c ( 7, regVal)
-            #print self.femb.read_reg_i2c(7)
-            #print self.femb.read_reg_i2c(7)
+            ####
 
         elif (srcflag=="0"):
             print "Enabling external pulse (still testing may not work)"
@@ -146,7 +153,7 @@ class FEMB_CONFIG:
                 self.fe_reg.REGS[i] = fe_reg[i] | self.fe_reg.REGS[i]
                 print hex(self.fe_reg.REGS[i])
 
-            self.configDefFeAsic(self.fe_reg.REGS)
+            self.configFeAsic(self.fe_reg.REGS)
 
             # set to pulser mode (0x01) and enable external input (0x00xx)
             self.femb.write_reg_i2c(16, 0x0001)
@@ -163,20 +170,14 @@ class FEMB_CONFIG:
                 self.fe_reg.REGS[i] = fe_reg[i] | self.fe_reg.REGS[i]
                 print hex(self.fe_reg.REGS[i])
 
-            self.configDefFeAsic(self.fe_reg.REGS)
+            self.configFeAsic(self.fe_reg.REGS)
 
             # disable pulser mode
             self.femb.write_reg_i2c(16, 0x0)
             print self.femb.read_reg_i2c(16)
 
         else:
-            print "Source flag must be 0 (ext), 1 (dac), 2 (dac by channel), or 99 (disable)"
-
-    #def enablePulseModebychannel(self,chipnum,numchn):
-
-#	print "internal pulse by channel"
- #       numchip = int(chipnum)
-  #      numchn = int(numchn)
+            print "Source flag must be 0 (ext), 1 (dac), or 99 (disable)"
 
     def configAdcAsic(self,Adcasic_regs):
         #ADC ASIC SPI registers
@@ -219,7 +220,7 @@ class FEMB_CONFIG:
         #LBNE_ADC_MODE
 
 
-    def configDefFeAsic(self,feasic_regs):
+    def configFeAsic(self,feasic_regs):
         print "FEMB_CONFIG--> Config FE ASIC SPI"
         print len(feasic_regs)
 
@@ -269,9 +270,6 @@ class FEMB_CONFIG:
         regVal = (chVal << 8 ) + asicVal
         self.femb.write_reg_i2c ( self.REG_SEL_CH, regVal)
         self.femb.write_reg_i2c ( self.REG_SEL_CH, regVal)
-
-    def configFeAsic(self,gain,shape,base):
-	print "There are no FE ASICs on this board"
 
     def syncADC(self):
         #turn on ADC test mode

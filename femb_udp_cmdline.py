@@ -162,6 +162,7 @@ class FEMB_UDP:
 
     def get_rawdata_packets(self, val):
         numVal = int(val)
+
         if (numVal < 0) or (numVal > self.MAX_NUM_PACKETS):
                 #print "FEMB_UDP--> Error record_hs_data: Invalid number of data packets requested"
                 return None
@@ -199,7 +200,7 @@ class FEMB_UDP:
         try:
                 data = sock_data.recv(1024)
         except socket.timeout:
-                #print "FEMB_UDP--> Error get_data: No data packet received from board, quitting"
+                print "FEMB_UDP--> Error get_data: No data packet received from board, quitting"
                 sock_data.close()
                 return []
 

@@ -1,3 +1,4 @@
+
 from datetime import datetime, date, time
 import gi
 gi.require_version('Gtk', '3.0')
@@ -119,8 +120,10 @@ class ChipTestWindow(Gtk.Window):
         def call_selectChannel(self, button):
                 asic = str(self.asicVal_combo.get_active_text())
                 channel = str(self.channelVal_combo.get_active_text())
-                self.femb_config.selectChannel(asic, channel)
-		data = subprocess.check_output(["python", "select_channel.py",config_type, asic, channel])
+                self.femb_config.selectChannel(asic,channel,1)
+#		data = subprocess.check_output(["python", "select_channel.py",config_type, asic, channel])
+#		data = subprocess.check_output(["python", "select_channel.py", asic, channel, 0])
+                data = "Switching to ASIC #"+str(asic)+", Channel #"+str(channel)+", HS Mode is off"
 		subw = DataViewWindow(data)
 
 
@@ -128,7 +131,8 @@ class ChipTestWindow(Gtk.Window):
                 asicval = str(0)
                 for i in range(16):
                         chanval = str(i)
-                        data = subprocess.check_output(["python", "select_channel.py",config_type, asicval, chanval])
+#                        data = subprocess.check_output(["python", "select_channel.py",config_type, asicval, chanval])
+                        data = subprocess.check_output(["python", "select_channel.py",asicval, chanval, 1])
                         subprocess.check_output(["python", "pyroot_plot.py"])
                         subw = DataViewWindow(data)
 

@@ -5,7 +5,7 @@ import string
 class FE_ASIC_REG_MAPPING:
 
 ####sec_chn_reg only sets a channel register, the other registers remains as before
-    def set_fechn_reg(self, chip=0, chn=0, sts=0, snc=0, sg=0, st=0, sdc=0, sdf=0 ):
+    def set_fechn_reg(self, chip=0, chn=0, sts=0, snc=0, sg=0, st=0, sdc=0, sdf=0):
         chn_reg = ((sts&0x01)<<7) + ((snc&0x01)<<6) + ((sg&0x03)<<4) +\
                   ((st&0x03)<<2)  + ((sdc&0x01)<<1) + ((sdf&0x01)<<0) 
 
